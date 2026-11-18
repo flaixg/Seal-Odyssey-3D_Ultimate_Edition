@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seal Odyssey 3D: Ultimate Edition</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #070810;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 950px;
+            max-width: 100%;
+            height: 560px;
+            border: 3px solid #00ffcc;
+            box-shadow: 0 0 40px rgba(0, 255, 204, 0.4), inset 0 0 25px rgba(0, 255, 204, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            background: #030308;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .ui-overlay {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
+            letter-spacing: 1px;
+            z-index: 5;
+        }
+        .hud-buttons {
+            position: absolute;
+            top: 65px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 6;
+        }
+        .hud-btn {
+            background: rgba(0, 255, 204, 0.15);
+            color: #00ffcc;
+            border: 2px solid #00ffcc;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .hud-btn:hover {
+            background: #00ffcc;
+            color: #030308;
+            box-shadow: 0 0 15px #00ffcc;
+        }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 6, 15, 0.94);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        h1 {
+            color: #ff007f;
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 0, 127, 0.8);
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        p {
+            margin-bottom: 22px;
+            font-size: 16px;
+            text-align: center;
+            padding: 0 30px;
+            color: #a0a0c0;
+            line-height: 1.5;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #00ffcc 0%, #00bfff 100%);
+            color: #030308;
+            border: none;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+            letter-spacing: 1px;
+        }
+        .btn:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 25px rgba(0, 255, 204, 0.8);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: #00ffcc;
+            border: 2px solid #00ffcc;
+        }
+        .btn-secondary:hover {
+            background: rgba(0, 255, 204, 0.15);
+            color: #fff;
+        }
+        .lang-select {
+            margin-bottom: 22px;
+            display: flex;
+            gap: 8px;
+        }
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #8892b0;
+            border: 1px solid #333d52;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: #ff007f;
+            color: #fff;
+            border-color: #ff007f;
+            box-shadow: 0 0 12px #ff007f;
+        }
+        .shop-grid, .map-grid {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .shop-card, .map-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid #333d52;
+            border-radius: 8px;
+            padding: 15px;
+            width: 150px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .shop-card.selected, .map-card.selected {
+            border-color: #00ffcc;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+            background: rgba(0, 255, 204, 0.08);
+        }
+        .shop-card h3, .map-card h3 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .shop-card p, .map-card p {
+            font-size: 13px;
+            margin-bottom: 0;
+            color: #8892b0;
+        }
+        footer {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+            letter-spacing: 1px;
+        }
+        footer a {
+            color: #00ffcc;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        footer a:hover {
+            text-shadow: 0 0 8px #00ffcc;
+            color: #fff;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+    <!-- Three.js for 3D Graphics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Main Menu Screen (English Default) -->
+        <div id="menu-screen" class="screen">
+            <h1 id="ui-title">SEAL ODYSSEY 3D</h1>
+            <p id="ui-instructions">Guide your neon seal, collect fish coins, dodge creepy face enemies, and unlock new worlds!<br>Use <b>LEFT / RIGHT</b> arrows or <b>A / D</b> to move.</p>
+            
+            <div class="lang-select">
+                <button class="lang-btn active" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn" onclick="setLanguage('es')">ES</button>
+                <button class="lang-btn" onclick="setLanguage('fr')">FR</button>
+                <button class="lang-btn" onclick="setLanguage('ca')">CA</button>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn" id="ui-start-btn" onclick="startGame()">PLAY GAME</button>
+                <button class="btn btn-secondary" id="ui-shop-btn" onclick="openShop('menu')">SHOP</button>
+                <button class="btn btn-secondary" id="ui-maps-btn" onclick="openMaps('menu')">MAPS</button>
+            </div>
+        </div>
+
+        <!-- Shop Screen -->
+        <div id="shop-screen" class="screen hidden">
+            <h1 id="ui-shop-title">SEAL SKIN SHOP</h1>
+            <p id="ui-shop-coins">Coins: 0 🐟</p>
+            <div class="shop-grid">
+                <div class="shop-card selected" id="skin-classic" onclick="buySkin('classic', 0)">
+                    <h3>Classic Neon</h3>
+                    <p>Default</p>
+                </div>
+                <div class="shop-card" id="skin-gold" onclick="buySkin('gold', 50)">
+                    <h3>Golden Seal</h3>
+                    <p>50 🐟</p>
+                </div>
+                <div class="shop-card" id="skin-cyber" onclick="buySkin('cyber', 120)">
+                    <h3>Cyberpunk Seal</h3>
+                    <p>120 🐟</p>
+                </div>
+            </div>
+            <button class="btn btn-secondary" id="ui-back-shop" onclick="closeShop()">BACK</button>
+        </div>
+
+        <!-- Maps Screen -->
+        <div id="maps-screen" class="screen hidden">
+            <h1 id="ui-maps-title">SELECT MAP</h1>
+            <p id="ui-maps-xp">XP: 0 / 100 to Unlock Next Map</p>
+            <div class="map-grid">
+                <div class="map-card selected" id="map-tundra" onclick="selectMap('tundra', 0)">
+                    <h3>Glacial Tundra</h3>
+                    <p>Unlocked</p>
+                </div>
+                <div class="map-card" id="map-caves" onclick="selectMap('caves', 100)">
+                    <h3>Ice Caves</h3>
+                    <p>Req: 100 XP</p>
+                </div>
+                <div class="map-card" id="map-cosmos" onclick="selectMap('cosmos', 300)">
+                    <h3>Cosmic Abyss</h3>
+                    <p>Req: 300 XP</p>
+                </div>
+            </div>
+            <button class="btn btn-secondary" id="ui-back-map" onclick="closeMaps()">BACK</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen hidden">
+            <h1 id="ui-gameover-title">GAME OVER</h1>
+            <p id="ui-final-score">Score: 0 | Coins Earned: 0 🐟</p>
+            <div class="btn-group">
+                <button class="btn" id="ui-restart-btn" onclick="startGame()">PLAY AGAIN</button>
+                <button class="btn btn-secondary" id="ui-shop-gameover" onclick="openShop('gameover')">SHOP</button>
+            </div>
+        </div>
+
+        <!-- In-Game HUD & Quick Access Buttons -->
+        <div class="ui-overlay">
+            <span id="score-display">SCORE: 0</span>
+            <span id="coins-display">FISH: 0 🐟</span>
+            <span id="xp-display">XP: 0</span>
+        </div>
+        <div class="hud-buttons">
+            <button class="hud-btn" id="ui-hud-shop" onclick="openShop('hud')">🛒 SHOP</button>
+            <button class="hud-btn" id="ui-hud-maps" onclick="openMaps('hud')">🗺️ MAPS</button>
+        </div>
+    </div>
+
+    <footer>
+        Created by <a href="https://github.com/flaixg" target="_blank">flaixg</a>
+    </footer>
+
+    <script>
+        // Multilingual Translations (English as primary base)
+        const translations = {
+            en: {
+                title: "SEAL ODYSSEY 3D",
+                instructions: "Guide your neon seal, collect fish coins, avoid creepy face enemies, and unlock new worlds!<br>Use <b>LEFT / RIGHT</b> arrows or <b>A / D</b> to move.",
+                startBtn: "PLAY GAME",
+                shopBtn: "SHOP",
+                mapsBtn: "MAPS",
+                shopTitle: "SEAL SKIN SHOP",
+                mapsTitle: "SELECT MAP",
+                backBtn: "BACK",
+                gameOver: "GAME OVER",
+                scoreText: "SCORE: ",
+                fishText: "FISH: ",
+                xpText: "XP: ",
+                restartBtn: "PLAY AGAIN"
+            },
+            es: {
+                title: "SEAL ODYSSEY 3D",
+                instructions: "¡Guía a tu foca de neón, colecciona monedas de pez, evita enemigos con cara y desbloquea mundos!<br>Usa las flechas <b>IZQUIERDA / DERECHA</b> o <b>A / D</b>.",
+                startBtn: "JUGAR",
+                shopBtn: "TIENDA",
+                mapsBtn: "MAPAS",
+                shopTitle: "TIENDA DE PIELES",
+                mapsTitle: "SELECCIONAR MAPA",
+                backBtn: "VOLVER",
+                gameOver: "FIN DEL JUEGO",
+                scoreText: "PUNTUACIÓN: ",
+                fishText: "PECES: ",
+                xpText: "XP: ",
+                restartBtn: "VOLVER A JUGAR"
+            },
+            fr: {
+                title: "SEAL ODYSSEY 3D",
+                instructions: "Guidez votre phoque, attrapez des poissons, évitez les visages ennemis et débloquez des mondes !<br>Utilisez <b>GAUCHE / DROITE</b> ou <b>A / D</b>.",
+                startBtn: "JOUER",
+                shopBtn: "BOUTIQUE",
+                mapsTitle: "CHOISIR CARTE",
+                shopTitle: "BOUTIQUE DE SKINS",
+                mapsBtn: "CARTES",
+                backBtn: "RETOUR",
+                gameOver: "PARTIE TERMINÉE",
+                scoreText: "SCORE : ",
+                fishText: "POISSONS : ",
+                xpText: "XP : ",
+                restartBtn: "REJOUER"
+            },
+            ca: {
+                title: "SEAL ODYSSEY 3D",
+                instructions: "Guia la teva foca de neó, recull monedes de peix, evita enemics en forma de cara i desbloqueja mons!<br>Utilitza les fletxes <b>ESQUERRA / DRETA</b> o <b>A / D</b>.",
+                startBtn: "JUGAR",
+                shopBtn: "BOTIGA",
+                mapsBtn: "MAPES",
+                shopTitle: "BOTIGA DE PECES",
+                mapsTitle: "SELECCIONAR MAPA",
+                backBtn: "TORNAR",
+                gameOver: "FINAL DEL JOC",
+                scoreText: "PUNTS: ",
+                fishText: "PEIXOS: ",
+                xpText: "XP: ",
+                restartBtn: "TORNAR A JUGAR"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('ui-title').innerText = translations[lang].title;
+            document.getElementById('ui-instructions').innerHTML = translations[lang].instructions;
+            document.getElementById('ui-start-btn').innerText = translations[lang].startBtn;
+            document.getElementById('ui-shop-btn').innerText = translations[lang].shopBtn;
+            document.getElementById('ui-maps-btn').innerText = translations[lang].mapsBtn;
+            document.getElementById('ui-shop-title').innerText = translations[lang].shopTitle;
+            document.getElementById('ui-maps-title').innerText = translations[lang].mapsTitle;
+            document.querySelectorAll('.btn-secondary').forEach(b => { if(b.innerText === "BACK" || b.innerText === "TORNAR" || b.innerText === "VOLVER" || b.innerText === "RETOUR") b.innerText = translations[lang].backBtn; });
+            document.getElementById('ui-gameover-title').innerText = translations[lang].gameOver;
+            document.getElementById('ui-restart-btn').innerText = translations[lang].restartBtn;
+            updateUI();
+        }
+
+        // Game State & Navigation Tracking
+        let totalCoins = 0;
+        let totalXP = 0;
+        let currentSkin = 'classic';
+        let currentMap = 'tundra';
+        let unlockedSkins = ['classic'];
+        let previousState = 'menu'; // Tracks where we opened shop/maps from ('menu', 'hud', 'gameover')
+
+        let scene, camera, renderer;
+        let seal;
+        let objects = [];
+        let gameState = 'MENU';
+        let score = 0;
+        let sessionCoins = 0;
+        let gameSpeed = 0.45;
+        let moveLeft = false;
+        let moveRight = false;
+
+        const container = document.getElementById('game-container');
+
+        function init3D() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x070810, 0.03);
+
+            camera = new THREE.PerspectiveCamera(65, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 3.5, 7);
+            camera.lookAt(0, 0, -4);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0x00ffcc, 1.8);
+            dirLight.position.set(5, 10, 5);
+            scene.add(dirLight);
+
+            createSeal();
+            createEnvironment();
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createSeal() {
+            const group = new THREE.Group();
+
+            let colorHex = 0x00ffcc;
+            let emissiveHex = 0x008855;
+            if (currentSkin === 'gold') { colorHex = 0xffd700; emissiveHex = 0xff8800; }
+            if (currentSkin === 'cyber') { colorHex = 0xff007f; emissiveHex = 0x7b2cbf; }
+
+            const bodyGeo = new THREE.CylinderGeometry(0.5, 0.6, 1.8, 8);
+            const mat = new THREE.MeshStandardMaterial({ color: colorHex, emissive: emissiveHex, emissiveIntensity: 0.6, roughness: 0.25 });
+            const body = new THREE.Mesh(bodyGeo, mat);
+            body.rotation.x = Math.PI / 2;
+            group.add(body);
+
+            const headGeo = new THREE.SphereGeometry(0.45, 8, 8);
+            const head = new THREE.Mesh(headGeo, mat);
+            head.position.set(0, 0.3, -0.9);
+            group.add(head);
+
+            seal = group;
+            seal.position.set(0, 0, 0);
+            scene.add(seal);
+        }
+
+        function updateSealSkin() {
+            scene.remove(seal);
+            createSeal();
+        }
+
+        let floorMesh;
+        function createEnvironment() {
+            const gridGeo = new THREE.PlaneGeometry(100, 100, 30, 30);
+            let gridColor = 0x151828;
+            if (currentMap === 'caves') gridColor = 0x003366;
+            if (currentMap === 'cosmos') gridColor = 0x330066;
+
+            const gridMat = new THREE.MeshStandardMaterial({ color: gridColor, wireframe: true });
+            floorMesh = new THREE.Mesh(gridGeo, gridMat);
+            floorMesh.rotation.x = -Math.PI / 2;
+            floorMesh.position.y = -1;
+            scene.add(floorMesh);
+        }
+
+        function onWindowResize() {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveLeft = true;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveLeft = false;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight = false;
+        });
+
+        // Smart Navigation Functions (supports opening from Menu, HUD during gameplay, or Game Over)
+        function openShop(origin) {
+            previousState = origin;
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            document.getElementById('shop-screen').classList.remove('hidden');
+            document.getElementById('ui-shop-coins').innerText = `Coins: ${totalCoins + sessionCoins} 🐟`;
+            if (gameState === 'PLAYING') gameState = 'PAUSED';
+        }
+
+        function closeShop() {
+            document.getElementById('shop-screen').classList.add('hidden');
+            restoreScreenState();
+        }
+
+        function openMaps(origin) {
+            previousState = origin;
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            document.getElementById('maps-screen').classList.remove('hidden');
+            document.getElementById('ui-maps-xp').innerText = `XP: ${totalXP} / 300`;
+            if (gameState === 'PLAYING') gameState = 'PAUSED';
+        }
+
+        function closeMaps() {
+            document.getElementById('maps-screen').classList.add('hidden');
+            restoreScreenState();
+        }
+
+        function restoreScreenState() {
+            if (previousState === 'menu') {
+                document.getElementById('menu-screen').classList.remove('hidden');
+                gameState = 'MENU';
+            } else if (previousState === 'gameover') {
+                document.getElementById('gameover-screen').classList.remove('hidden');
+                gameState = 'GAMEOVER';
+            } else if (previousState === 'hud') {
+                gameState = 'PLAYING'; // Resume game directly
+            }
+        }
+
+        function buySkin(skinName, cost) {
+            let availableCoins = totalCoins + sessionCoins;
+            if (unlockedSkins.includes(skinName)) {
+                currentSkin = skinName;
+            } else if (availableCoins >= cost) {
+                if (totalCoins >= cost) {
+                    totalCoins -= cost;
+                } else {
+                    let diff = cost - totalCoins;
+                    totalCoins = 0;
+                    sessionCoins -= diff;
+                }
+                unlockedSkins.push(skinName);
+                currentSkin = skinName;
+            }
+            updateSealSkin();
+            document.getElementById('ui-shop-coins').innerText = `Coins: ${totalCoins + sessionCoins} 🐟`;
+            document.querySelectorAll('.shop-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('skin-' + skinName).classList.add('selected');
+        }
+
+        function selectMap(mapName, reqXP) {
+            if (totalXP >= reqXP) {
+                currentMap = mapName;
+                scene.remove(floorMesh);
+                createEnvironment();
+                document.querySelectorAll('.map-card').forEach(c => c.classList.remove('selected'));
+                document.getElementById('map-' + mapName).classList.add('selected');
+            }
+        }
+
+        function startGame() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            
+            objects.forEach(obj => scene.remove(obj.mesh));
+            objects = [];
+
+            score = 0;
+            sessionCoins = 0;
+            gameSpeed = 0.45;
+            seal.position.x = 0;
+            gameState = 'PLAYING';
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            totalCoins += sessionCoins;
+            totalXP += Math.floor(score);
+            document.getElementById('ui-final-score').innerText = `${translations[currentLang].scoreText}${Math.floor(score)} | Coins: +${sessionCoins} 🐟`;
+            document.getElementById('gameover-screen').classList.remove('hidden');
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = translations[currentLang].scoreText + Math.floor(score);
+            document.getElementById('coins-display').innerText = translations[currentLang].fishText + (totalCoins + sessionCoins) + " 🐟";
+            document.getElementById('xp-display').innerText = translations[currentLang].xpText + totalXP;
+        }
+
+        let spawnTimer = 0;
+        function spawnObject() {
+            const isCoin = Math.random() > 0.38;
+            let mesh;
+
+            if (isCoin) {
+                const geo = new THREE.DodecahedronGeometry(0.4);
+                const mat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffaa00, emissiveIntensity: 0.9 });
+                mesh = new THREE.Mesh(geo, mat);
+            } else {
+                const group = new THREE.Group();
+                const boxGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+                const boxMat = new THREE.MeshStandardMaterial({ color: 0xff0055, emissive: 0xff0022, emissiveIntensity: 0.7, wireframe: true });
+                const box = new THREE.Mesh(boxGeo, boxMat);
+                group.add(box);
+
+                const eyeGeo = new THREE.SphereGeometry(0.18, 6, 6);
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+                const eye1 = new THREE.Mesh(eyeGeo, eyeMat);
+                eye1.position.set(-0.3, 0.2, 0.6);
+                const eye2 = eye1.clone();
+                eye2.position.x = 0.3;
+                group.add(eye1);
+                group.add(eye2);
+
+                mesh = group;
+            }
+
+            const lanes = [-2.5, 0, 2.5];
+            const laneX = lanes[Math.floor(Math.random() * lanes.length)];
+            mesh.position.set(laneX, 0, -55);
+            scene.add(mesh);
+
+            objects.push({ mesh: mesh, type: isCoin ? 'coin' : 'enemy' });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameState === 'PLAYING') {
+                if (moveLeft && seal.position.x > -2.5) seal.position.x -= 0.16;
+                if (moveRight && seal.position.x < 2.5) seal.position.x += 0.16;
+
+                seal.rotation.z = -seal.position.x * 0.15;
+
+                spawnTimer++;
+                if (spawnTimer > 38) {
+                    spawnObject();
+                    spawnTimer = 0;
+                    gameSpeed += 0.0015;
+                }
+
+                for (let i = objects.length - 1; i >= 0; i--) {
+                    let obj = objects[i];
+                    obj.mesh.position.z += gameSpeed;
+                    if (obj.type === 'coin') {
+                        obj.mesh.rotation.y += 0.05;
+                    } else {
+                        obj.mesh.rotation.x += 0.02;
+                    }
+
+                    let dx = Math.abs(seal.position.x - obj.mesh.position.x);
+                    let dz = Math.abs(seal.position.z - obj.mesh.position.z);
+
+                    if (dx < 0.9 && dz < 1.0) {
+                        if (obj.type === 'coin') {
+                            sessionCoins += 1;
+                            scene.remove(obj.mesh);
+                            objects.splice(i, 1);
+                            score += 15;
+                        } else {
+                            gameOver();
+                        }
+                    } else if (obj.mesh.position.z > 5) {
+                        scene.remove(obj.mesh);
+                        objects.splice(i, 1);
+                        if (obj.type === 'coin') score += 5;
+                    }
+                }
+
+                score += 0.2;
+                updateUI();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init3D();
+        animate();
+    </script>
+</body>
+</html>
